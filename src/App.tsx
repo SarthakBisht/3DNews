@@ -22,6 +22,7 @@ export default function App() {
         </div>
       )}
       <div className="scanlines pointer-events-none absolute inset-0 z-40" />
+      <div className="grain pointer-events-none fixed z-50" />
     </div>
   );
 }

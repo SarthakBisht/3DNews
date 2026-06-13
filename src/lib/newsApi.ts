@@ -1,5 +1,7 @@
 import { CATEGORIES, emptyFeedMap, type Article, type Category, type FeedMap } from './types';
 
+type PartialArticle = Omit<Article, 'category' | 'tags'>;
+
 // ─── Shared provider interface ────────────────────────────────────────────────
 
 interface NewsProvider {
@@ -9,6 +11,12 @@ interface NewsProvider {
 }
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
+
+const BAD_IMAGE = /logo|icon|avatar|placeholder|default|brand|sprite|transparent|1x1/i;
+function filterImage(url: string | null | undefined): string | null {
+  if (!url) return null;
+  return BAD_IMAGE.test(url) ? null : url;
+}
 
 function toISOSafe(s: string | null | undefined): string | null {
   if (!s) return null;
@@ -24,9 +32,11 @@ function toISOSafe(s: string | null | undefined): string | null {
 
 async function loadMockAll(): Promise<FeedMap> {
   const res = await fetch('/sample-news.json');
-  const data = (await res.json()) as Partial<Record<Category, Article[]>>;
+  const data = (await res.json()) as Partial<Record<Category, PartialArticle[]>>;
   const map = emptyFeedMap();
-  for (const c of CATEGORIES) map[c] = data[c] ?? [];
+  for (const c of CATEGORIES) {
+    map[c] = (data[c] ?? []).map((a) => ({ ...a, category: c, tags: [] }));
+  }
   return map;
 }
 
@@ -59,7 +69,9 @@ function normalizeNewsApi(raw: NewsApiArticle[], category: Category): Article[] 
       publishedAt: toISOSafe(a.publishedAt),
       description: a.description?.trim() || null,
       url: a.url!,
-      image: a.urlToImage || null,
+      image: filterImage(a.urlToImage),
+      category,
+      tags: [],
     }));
 }
 
@@ -88,6 +100,7 @@ interface CurrentsArticle {
   author: string | null;
   image: string | null;
   published: string | null;
+  category: string[] | null;
 }
 
 interface CurrentsResponse {
@@ -116,7 +129,9 @@ function normalizeCurrents(raw: CurrentsArticle[], category: Category): Article[
       publishedAt: toISOSafe(a.published),
       description: a.description?.trim() || null,
       url: a.url,
-      image: a.image || null,
+      image: filterImage(a.image),
+      category,
+      tags: a.category?.filter(Boolean) ?? [],
     }));
 }
 
@@ -156,6 +171,7 @@ interface NewsDataArticle {
   image_url: string | null;
   pubDate: string | null;
   source_id: string;
+  keywords: string[] | null;
 }
 
 interface NewsDataResponse {
@@ -184,7 +200,9 @@ function normalizeNewsData(raw: NewsDataArticle[], category: Category): Article[
       publishedAt: toISOSafe(a.pubDate),
       description: a.description?.trim() || null,
       url: a.link!,
-      image: a.image_url || null,
+      image: filterImage(a.image_url),
+      category,
+      tags: a.keywords?.filter(Boolean) ?? [],
     }));
 }
 
@@ -243,7 +261,9 @@ function normalizeGNews(raw: GNewsArticle[], category: Category): Article[] {
       publishedAt: toISOSafe(a.publishedAt),
       description: a.description?.trim() || null,
       url: a.url,
-      image: a.image || null,
+      image: filterImage(a.image),
+      category,
+      tags: [],
     }));
 }
 

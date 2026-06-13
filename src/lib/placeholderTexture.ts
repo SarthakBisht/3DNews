@@ -1,13 +1,5 @@
 import * as THREE from 'three';
-import type { Article } from './types';
-
-const PALETTES: [string, string][] = [
-  ['#27e8ff', '#8b5cff'],
-  ['#ff2bd6', '#8b5cff'],
-  ['#27e8ff', '#ff2bd6'],
-  ['#5cffd6', '#27e8ff'],
-  ['#ffb627', '#ff2bd6'],
-];
+import { CATEGORY_COLOR, type Article } from './types';
 
 function hashString(s: string): number {
   let h = 0;
@@ -59,7 +51,10 @@ export function makePlaceholderTexture(article: Article): THREE.Texture {
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
 
-  const [c1, c2] = PALETTES[hashString(article.id || article.title) % PALETTES.length];
+  const c1 = CATEGORY_COLOR[article.category] ?? '#27e8ff';
+  // secondary accent: rotate through complementary neon colors by hash
+  const ACCENTS = ['#ff2bd6', '#8b5cff', '#ffb627', '#ff6b35', '#00ffa3', '#ff3366'];
+  const c2 = ACCENTS[hashString(article.id || article.title) % ACCENTS.length];
 
   // Background gradient
   const bg = ctx.createLinearGradient(0, 0, W, H);
