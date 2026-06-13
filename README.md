@@ -22,12 +22,24 @@ Open http://localhost:5173. **It runs with no setup** — without an API key it
 loads a bundled sample dataset (`public/sample-news.json`).
 
 ### Use live news (optional)
-1. Get a free key at https://newsapi.org/register
-2. `cp .env.example .env` and set `VITE_NEWSAPI_KEY=your_key`
-3. Restart `pnpm dev`
 
-NewsAPI's free tier only allows browser requests from `localhost`, which is all
-this MVP needs.
+The app supports **4 providers** — set any combination of keys in `.env` and
+results are merged and deduplicated automatically. Priority order: Currents →
+NewsData → GNews → NewsAPI.
+
+```
+cp .env.example .env
+```
+
+| Env var | Provider | Free tier | Sign up |
+|---------|----------|-----------|---------|
+| `VITE_CURRENTS_API_KEY` | Currents API | 1 000 req/day, browser-safe | currentsapi.services |
+| `VITE_NEWSDATA_KEY` | NewsData.io | 200 req/day, browser-safe | newsdata.io |
+| `VITE_GNEWS_KEY` | GNews | 100 req/day, dev only | gnews.io |
+| `VITE_NEWSAPI_KEY` | NewsAPI.org | localhost only | newsapi.org |
+
+Restart `pnpm dev` after editing `.env`. The **left-side HUD** shows how many
+articles were fetched from each active provider.
 
 ## How to use
 - **Drag** anywhere to spin the sphere in any direction; **scroll** to zoom.

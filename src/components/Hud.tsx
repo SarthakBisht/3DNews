@@ -1,4 +1,5 @@
-import { FEEDS, type Feed } from '../lib/types';
+import { useMemo } from 'react';
+import { CATEGORIES, FEEDS, type Feed } from '../lib/types';
 import { useStore } from '../state/store';
 
 const CORNER = 'pointer-events-none absolute h-10 w-10 border-cyber-cyan/50';
@@ -23,6 +24,19 @@ export function Hud() {
   const loading = useStore((s) => s.loading);
   const spinning = useStore((s) => s.spinning);
   const focusedId = useStore((s) => s.focusedId);
+
+  const feeds = useStore((s) => s.feeds);
+
+  const providerCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const c of CATEGORIES) {
+      for (const a of feeds[c]) {
+        const provider = a.id.split('-')[0];
+        counts[provider] = (counts[provider] ?? 0) + 1;
+      }
+    }
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [feeds]);
 
   const status = loading
     ? 'SYNCING FEED'
@@ -50,8 +64,21 @@ export function Hud() {
         </p>
       </div>
 
-      {/* status readout */}
+      {/* provider stats + status readout */}
       <div className="absolute bottom-8 left-8 font-mono text-[11px] uppercase tracking-widest text-white/55">
+        {/* provider breakdown */}
+        {providerCounts.length > 0 && (
+          <div className="mb-3 space-y-0.5">
+            <div className="mb-1 text-white/30">sources</div>
+            {providerCounts.map(([provider, count]) => (
+              <div key={provider} className="flex items-center gap-2">
+                <span className="text-cyber-cyan">{provider}</span>
+                <span className="text-white/35">·</span>
+                <span className="text-white/80 tabular-nums">{count.toString().padStart(3, '0')}</span>
+              </div>
+            ))}
+          </div>
+        )}
         <div>
           <span className="text-cyber-cyan">status</span> :{' '}
           <span className={status === 'LOCKED' ? 'text-cyber-magenta' : 'text-white/80'}>

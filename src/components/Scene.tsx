@@ -25,13 +25,13 @@ function CameraRig({ radius }: { radius: number }) {
       len > 0.001
         ? { x: camera.position.x / len, y: camera.position.y / len, z: camera.position.z / len }
         : TMP;
-    const dist = radius + 5;
+    const dist = Math.max(radius + 5, radius * 1.8);
     camera.position.set(dir.x * dist, dir.y * dist, dir.z * dist);
 
     if (controls) {
       controls.target.set(0, 0, 0);
       controls.minDistance = radius + 1.3;
-      controls.maxDistance = radius + 14;
+      controls.maxDistance = radius * 4;
       controls.update();
     }
   }, [radius, camera, controls]);
