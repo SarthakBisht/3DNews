@@ -36,9 +36,9 @@ interface AppState {
   loading: boolean;
   error: string | null;
   focusedId: string | null;
-  /** true once user clicks a tile — keeps detail card open after mouse leaves */
   pinned: boolean;
   spinning: boolean;
+  viewMode: '3d' | '2d';
 
   setFeeds: (feeds: FeedMap) => void;
   setFeed: (feed: Feed) => void;
@@ -47,6 +47,7 @@ interface AppState {
   setFocused: (id: string | null) => void;
   setPinned: (pinned: boolean) => void;
   setSpinning: (spinning: boolean) => void;
+  setViewMode: (mode: '3d' | '2d') => void;
 }
 
 const initialFeeds = emptyFeedMap();
@@ -61,6 +62,7 @@ export const useStore = create<AppState>((set) => ({
   focusedId: null,
   pinned: false,
   spinning: false,
+  viewMode: '3d',
 
   setFeeds: (feeds) =>
     set((s) => ({
@@ -76,6 +78,7 @@ export const useStore = create<AppState>((set) => ({
   setFocused: (focusedId) => set({ focusedId }),
   setPinned: (pinned) => set({ pinned }),
   setSpinning: (spinning) => set({ spinning }),
+  setViewMode: (viewMode) => set({ viewMode }),
 }));
 
 export const selectFocusedArticle = (s: AppState): Article | null =>

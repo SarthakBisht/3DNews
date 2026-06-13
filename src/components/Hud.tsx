@@ -73,6 +73,8 @@ export function Hud() {
   const spinning    = useStore((s) => s.spinning);
   const focusedId   = useStore((s) => s.focusedId);
   const feeds       = useStore((s) => s.feeds);
+  const viewMode    = useStore((s) => s.viewMode);
+  const setViewMode = useStore((s) => s.setViewMode);
 
   const displayCount = useCountUp(articles.length);
 
@@ -113,6 +115,30 @@ export function Hud() {
           style={{ animationDelay: `${i * 0.75}s` }}
         />
       ))}
+
+      {/* ── VIEW TOGGLE — top center ─────────────────────────────────────── */}
+      <div className="pointer-events-auto absolute left-1/2 top-8 -translate-x-1/2 flex items-center gap-px">
+        {(['3d', '2d'] as const).map((mode) => {
+          const active = viewMode === mode;
+          return (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className="flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-all duration-200"
+              style={{
+                background: active ? 'rgba(39,232,255,0.12)' : 'rgba(255,255,255,0.03)',
+                color: active ? '#27e8ff' : 'rgba(255,255,255,0.3)',
+                border: `1px solid ${active ? '#27e8ff44' : 'rgba(255,255,255,0.08)'}`,
+                borderRadius: mode === '3d' ? '6px 0 0 6px' : '0 6px 6px 0',
+                boxShadow: active ? '0 0 12px rgba(39,232,255,0.2)' : 'none',
+              }}
+            >
+              <span>{mode === '3d' ? '◉' : '▦'}</span>
+              <span>{mode.toUpperCase()}</span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* ── TITLE — top left ──────────────────────────────────────────────── */}
       <div className="absolute left-8 top-8">

@@ -102,6 +102,58 @@ body {
   100% { top: 100%; opacity: 0; }
 }
 
+/* ── Ken Burns animations (Harry Potter living newspaper) ───────────────────── */
+.kb-zoom-in  { animation: kb-zoom-in  14s ease-in-out infinite alternate; }
+.kb-pan-left { animation: kb-pan-left 12s ease-in-out infinite alternate; }
+.kb-pan-right{ animation: kb-pan-right 13s ease-in-out infinite alternate; }
+.kb-zoom-out { animation: kb-zoom-out 15s ease-in-out infinite alternate; }
+.kb-pan-up   { animation: kb-pan-up   11s ease-in-out infinite alternate; }
+.kb-drift    { animation: kb-drift    16s ease-in-out infinite alternate; }
+
+@keyframes kb-zoom-in {
+  from { transform: scale(1.0) translate(0%,  0%); }
+  to   { transform: scale(1.1) translate(-2%, -1.5%); }
+}
+@keyframes kb-pan-left {
+  from { transform: scale(1.08) translate(2%,   0%); }
+  to   { transform: scale(1.05) translate(-2%,  1%); }
+}
+@keyframes kb-pan-right {
+  from { transform: scale(1.06) translate(-1.5%, 1%); }
+  to   { transform: scale(1.09) translate(2.5%, -1%); }
+}
+@keyframes kb-zoom-out {
+  from { transform: scale(1.12) translate(1%, -1%); }
+  to   { transform: scale(1.02) translate(-1%, 0%); }
+}
+@keyframes kb-pan-up {
+  from { transform: scale(1.07) translate(0%,  2%); }
+  to   { transform: scale(1.04) translate(1%, -2%); }
+}
+@keyframes kb-drift {
+  0%   { transform: scale(1.05) translate(0%,    0%); }
+  33%  { transform: scale(1.08) translate(-1.5%, -1%); }
+  66%  { transform: scale(1.06) translate(1.5%,  1%); }
+  100% { transform: scale(1.05) translate(0%,    0%); }
+}
+
+/* ── Harry Potter newspaper shimmer sweep ───────────────────────────────────── */
+.news-shimmer {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255,255,255,0.055) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 5s ease-in-out infinite;
+}
+
+@keyframes shimmer-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* ── Corner bracket pulse ───────────────────────────────────────────────────── */
 @keyframes corner-breathe {
   0%,100% { opacity: 0.45; }
