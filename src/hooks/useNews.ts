@@ -1,35 +1,72 @@
 import { useEffect } from 'react';
 import { fetchAllFeeds } from '../lib/newsApi';
+import { readCache, writeCache, msUntilExpiry } from '../lib/newsCache';
 import { useStore } from '../state/store';
 
+const REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes
+
 /**
- * Loads every category feed once on mount. Feed switching afterwards is handled
- * client-side from the already-loaded data, so it's instant and counts are exact.
+ * Loads every category feed on mount, served from localStorage cache when
+ * fresh (< 30 min old). Schedules an automatic background refresh at the
+ * exact moment the cache expires, and every 30 min thereafter.
  */
 export function useNews(): void {
-  const setFeeds = useStore((s) => s.setFeeds);
+  const setFeeds   = useStore((s) => s.setFeeds);
   const setLoading = useStore((s) => s.setLoading);
-  const setError = useStore((s) => s.setError);
+  const setError   = useStore((s) => s.setError);
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setError(null);
 
-    fetchAllFeeds()
-      .then((feeds) => {
+    async function load(showSpinner: boolean) {
+      if (showSpinner) {
+        setLoading(true);
+        setError(null);
+      }
+
+      // Serve from cache if still fresh
+      const cached = readCache();
+      if (cached) {
         if (!active) return;
-        setFeeds(feeds);
+        setFeeds(cached);
         setLoading(false);
-      })
-      .catch((err: unknown) => {
+        return;
+      }
+
+      // Cache miss or expired — hit the APIs
+      try {
+        const feeds = await fetchAllFeeds();
+        if (!active) return;
+        writeCache(feeds);
+        setFeeds(feeds);
+      } catch (err) {
         if (!active) return;
         setError(err instanceof Error ? err.message : 'Failed to load news');
-        setLoading(false);
-      });
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    // Initial load
+    load(true);
+
+    // Schedule first refresh exactly when the cache expires,
+    // then keep going every 30 min.
+    const firstDelay = msUntilExpiry() || REFRESH_INTERVAL;
+    let interval: ReturnType<typeof setInterval>;
+
+    const timeout = setTimeout(() => {
+      if (!active) return;
+      load(false); // silent background refresh
+      interval = setInterval(() => {
+        if (active) load(false);
+      }, REFRESH_INTERVAL);
+    }, firstDelay);
 
     return () => {
       active = false;
+      clearTimeout(timeout);
+      clearInterval(interval);
     };
   }, [setFeeds, setLoading, setError]);
 }
