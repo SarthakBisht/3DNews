@@ -46,7 +46,7 @@ export function DetailCard() {
 
           {/* Close button */}
           <button
-            onClick={() => setFocused(null)}
+            onClick={() => { setFocused(null); useStore.getState().setPinned(false); }}
             className="absolute right-3 top-3 z-10 font-mono text-[10px] text-white/30 transition hover:text-cyber-magenta"
           >
             [ ✕ ]

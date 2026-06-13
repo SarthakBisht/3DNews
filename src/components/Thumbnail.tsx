@@ -95,7 +95,8 @@ export function Thumbnail({ article, point, focused }: Props) {
         <mesh
           userData={{ articleId: article.id }}
           onPointerEnter={(e) => { e.stopPropagation(); useStore.getState().setFocused(article.id); }}
-          onPointerLeave={() => useStore.getState().setFocused(null)}
+          onPointerLeave={() => { if (!useStore.getState().pinned) useStore.getState().setFocused(null); }}
+          onClick={(e) => { e.stopPropagation(); const s = useStore.getState(); s.setFocused(article.id); s.setPinned(true); }}
         >
           <planeGeometry args={[W, H]} />
           <meshBasicMaterial map={texture} toneMapped={false} />

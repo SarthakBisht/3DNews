@@ -35,9 +35,9 @@ interface AppState {
   counts: Record<Feed, number>;
   loading: boolean;
   error: string | null;
-  /** id of the article currently focused at screen-center, or null. */
   focusedId: string | null;
-  /** true while the sphere is being spun fast enough to suppress focusing. */
+  /** true once user clicks a tile — keeps detail card open after mouse leaves */
+  pinned: boolean;
   spinning: boolean;
 
   setFeeds: (feeds: FeedMap) => void;
@@ -45,6 +45,7 @@ interface AppState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setFocused: (id: string | null) => void;
+  setPinned: (pinned: boolean) => void;
   setSpinning: (spinning: boolean) => void;
 }
 
@@ -58,6 +59,7 @@ export const useStore = create<AppState>((set) => ({
   loading: true,
   error: null,
   focusedId: null,
+  pinned: false,
   spinning: false,
 
   setFeeds: (feeds) =>
@@ -72,6 +74,7 @@ export const useStore = create<AppState>((set) => ({
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
   setFocused: (focusedId) => set({ focusedId }),
+  setPinned: (pinned) => set({ pinned }),
   setSpinning: (spinning) => set({ spinning }),
 }));
 

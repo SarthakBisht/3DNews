@@ -49,6 +49,7 @@ export function NewsSphere({ radius }: Props) {
       if (settled.current) {
         settled.current = false;
         store.setSpinning(true);
+        store.setPinned(false);
         if (store.focusedId) store.setFocused(null);
       }
       return;
