@@ -298,33 +298,51 @@ const PROVIDERS: NewsProvider[] = [
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+let cachedFeeds: { feeds: FeedMap; at: number } | null = null;
+let inFlight: Promise<FeedMap> | null = null;
+
 /**
  * Fetches headlines for every category from all available providers, merges
  * and deduplicates by URL (priority order: Currents > NewsData > GNews > NewsAPI).
  * Falls back to the bundled sample dataset when no keys are configured or all
  * live requests fail.
+ *
+ * In-flight deduplication: concurrent callers (e.g. React StrictMode) share
+ * the same promise so the APIs are only hit once per TTL window.
  */
 export async function fetchAllFeeds(): Promise<FeedMap> {
+  if (cachedFeeds && Date.now() - cachedFeeds.at < CACHE_TTL) return cachedFeeds.feeds;
+  if (inFlight) return inFlight;
+
   const activeProviders = PROVIDERS.filter((p) => p.isAvailable());
   if (activeProviders.length === 0) return loadMockAll();
 
-  const map = emptyFeedMap();
+  inFlight = (async () => {
+    const map = emptyFeedMap();
 
-  await Promise.all(
-    CATEGORIES.map(async (category) => {
-      const perProvider = await Promise.all(
-        activeProviders.map((p) => p.fetchCategory(category).catch(() => [] as Article[])),
-      );
-      const all = perProvider.flat();
-      const seen = new Set<string>();
-      map[category] = all.filter((a) => {
-        if (seen.has(a.url)) return false;
-        seen.add(a.url);
-        return true;
-      });
-    }),
-  );
+    await Promise.all(
+      CATEGORIES.map(async (category) => {
+        const perProvider = await Promise.all(
+          activeProviders.map((p) => p.fetchCategory(category).catch(() => [] as Article[])),
+        );
+        const all = perProvider.flat();
+        const seen = new Set<string>();
+        map[category] = all.filter((a) => {
+          if (seen.has(a.url)) return false;
+          seen.add(a.url);
+          return true;
+        });
+      }),
+    );
 
-  const total = CATEGORIES.reduce((n, c) => n + map[c].length, 0);
-  return total > 0 ? map : loadMockAll();
+    const total = CATEGORIES.reduce((n, c) => n + map[c].length, 0);
+    const result = total > 0 ? map : await loadMockAll();
+    cachedFeeds = { feeds: result, at: Date.now() };
+    return result;
+  })().finally(() => {
+    inFlight = null;
+  });
+
+  return inFlight;
 }
