@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { CATEGORY_COLOR, type Article } from '../lib/types';
 import type { SpherePoint } from '../lib/sphere';
 import { makePlaceholderTexture } from '../lib/placeholderTexture';
+import { useStore } from '../state/store';
 
 const W = 1.32;
 const H = 0.99;
@@ -91,7 +92,11 @@ export function Thumbnail({ article, point, focused }: Props) {
           <planeGeometry args={[W + 0.12, H + 0.12]} />
           <meshBasicMaterial color={neonColor} transparent opacity={0.6} toneMapped={false} />
         </mesh>
-        <mesh userData={{ articleId: article.id }}>
+        <mesh
+          userData={{ articleId: article.id }}
+          onPointerEnter={(e) => { e.stopPropagation(); useStore.getState().setFocused(article.id); }}
+          onPointerLeave={() => useStore.getState().setFocused(null)}
+        >
           <planeGeometry args={[W, H]} />
           <meshBasicMaterial map={texture} toneMapped={false} />
         </mesh>
